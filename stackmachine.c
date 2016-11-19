@@ -129,19 +129,35 @@ int execute(int inst) {
             break;
 
         case ADD:
-            stack[sp] = stack[sp] + stack[sp-1];
+            {
+            int a = stack[sp--];
+            int b = stack[sp--];
+            stack[sp] = a + b;
+            }
             break;
 
         case SUB:
-            stack[sp] = stack[sp] - stack[sp-1];
+            {
+            int a = stack[sp--];
+            int b = stack[sp--];
+            stack[sp] = a - b;
+            }
             break;
 
         case MUL:
-            stack[sp] = stack[sp] * stack[sp-1];
+            {
+            int a = stack[sp--];
+            int b = stack[sp--];
+            stack[sp] = a * b;
+            }
             break;
 
         case DIV:
-            stack[sp] = stack[sp] / stack[sp-1];
+            {
+            int a = stack[sp--];
+            int b = stack[sp--];
+            stack[sp] = a / b;
+            }
             break;
 
 
@@ -220,7 +236,6 @@ int main(int argc, char** argv) {
     };
     */
 
-    /*
     int code[] = { 
         PUSH, 1,    
         PUSH, -3,    
@@ -229,22 +244,22 @@ int main(int argc, char** argv) {
         PUSH, '\n',
         PRINTC,
         POP,
-        JLEZ, 4,
+        //JLEZ, 4,
         HALT         
     };
-    */
 
+    /*
     int code[] = { 
-        PUSH, 1,       /* Used for loop */
+        PUSH, 1,       // Used for loop
         PUSH, -3,    
         STORE, 100,
         STORE, 101,
 
-        PUSH, 2,       /* Mul 2 * 5 four times*/
+        PUSH, 2,       // Mul 2 * 5 four times
         PUSH, 5,
         MUL,
 
-        PRINTI,        /* Print results */
+        PRINTI,        // Print results
         PUSH, '\n',
         PRINTC,
         POP,
@@ -256,6 +271,7 @@ int main(int argc, char** argv) {
         JLEZ, 4,
         HALT         
     };
+    */
 
     printf("*** LOADING ***\n");
     int i;
