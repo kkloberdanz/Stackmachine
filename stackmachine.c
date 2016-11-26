@@ -58,7 +58,8 @@ void print_stack() {
     printf("SP: %d\n", sp);
     printf("PC: %d\n", pc);
     for (i = 0; i <= sp; ++i) {
-        if (i == sp) { printf("%2d: %d*\n", i, stack[i]);
+        if (i == sp) { 
+            printf("%2d: %d*\n", i, stack[i]);
         } else {
             printf("%2d: %d\n", i, stack[i]);
         }
@@ -162,7 +163,11 @@ int execute(int inst) {
 
 
         case MOD:
-            stack[sp] = stack[sp] % stack[sp-1];
+            {
+            int a = stack[sp--];
+            int b = stack[sp--];
+            stack[sp] = a % b;
+            }
             break;
 
         case PRINTI:
