@@ -14,7 +14,7 @@ $ make
 
 Instruction Set:
 
-  Immediate
+#Immediate
 
 PUSH        : Pushes immediate value, i.e. value below this instruction
               onto the top of the stack
@@ -31,7 +31,7 @@ JZ          : Conditional jump, jump if top of stack is 0
 JLEZ        : Conditional jump, jump if top of stack is <= 0
 
 
-  Stack
+#Stack
 
 ADD         : Add top 2 numbers on stack, then push result to the top
 
@@ -53,7 +53,7 @@ READC       : Read 1 character from stdin, put on top of stack
 
 POP         : Pop top item off of stack
 
-  System
+#System
 
 HALT        : Terminate the program
 
