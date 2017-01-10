@@ -3,7 +3,7 @@
 
 class Assembler {
     private:
-        bool debug = false;
+        bool debug;
 
         std::map<std::string, int64_t> inst_m = {
             {"NOOP",    0},
@@ -19,10 +19,12 @@ class Assembler {
             {"READC",  10},
             {"POP",    11},
             {"LOAD",   12},
-            {"STORE",  13},
-            {"J",      14},
-            {"JZ",     15},
-            {"JLEZ",   16},
+            {"LOADRA", 13},
+            {"STORE",  14},
+            {"STORERA",15},
+            {"J",      16},
+            {"JZ",     17},
+            {"JLEZ",   18},
             {"HALT",   999999}
         };
 
@@ -42,12 +44,57 @@ class Assembler {
         }
 
         bool requires_immediate(const std::string inst) {
-            return (inst == "PUSH")  ||
-                   (inst == "STORE") ||
-                   (inst == "LOAD")  ||
-                   (inst == "J")     ||
-                   (inst == "JZ")    ||
+            return (inst == "PUSH")    ||
+                   (inst == "STORE")   ||
+                   (inst == "STORERA") ||
+                   (inst == "LOAD")    ||
+                   (inst == "LOADRA")  ||
+                   (inst == "J")       ||
+                   (inst == "JZ")      ||
                    (inst == "JLEZ");
+        }
+
+        std::string process(std::string s) {
+            std::string ret_s;
+            // process out comments and whitespace
+            int i = 0;
+            while ((s[i] == ' ') || (s[i] == '\t') || (s[i] == '\n')) {
+                i++;
+            }
+            char c;
+            for (; i < s.size(); ++i) {
+                c = s[i];
+                if ((c != ';') && (c != '#') && (c != ' ') && (c != '\t') && (c != '\n')) {
+                    ret_s += c;
+                } else {
+                    return ret_s;
+                }
+            }
+            return ret_s;
+        }
+
+        void assign_labels(std::vector<std::string>& v) {
+            std::map<std::string, int64_t> label_m;
+            std::string inst;
+            int found;
+            for (int64_t i = 0; i < v.size(); ++i) {
+                inst = v.at(i);
+
+                found = inst.find(':');
+                if (found != std::string::npos) {
+                    // then inst is label
+                    //std::cout << inst.substr(0, found) << std::endl;
+                    label_m[inst.substr(0, found)] = i;
+                    v.erase(v.begin() + i); // remove label from vector
+                }
+            }
+
+            for (int64_t i = 0; i < v.size(); ++i) {
+                inst = v.at(i);
+                if (label_m.find(inst) != label_m.end()) {
+                    v.at(i) = std::to_string(label_m.find(inst)->second);
+                }
+            }
         }
 
     public:
@@ -56,14 +103,17 @@ class Assembler {
         }
 
         Assembler() {
-            //
+            debug = false;
         }
 
         void from_file(const char* filename) {
             std::string line;
             std::ifstream in_f(filename);
             while (getline(in_f, line)) {
-                input_v.push_back(line);
+                line = process(line);
+                if (!line.empty()) {
+                    input_v.push_back(line);
+                }
             }
         }
 
@@ -75,13 +125,18 @@ class Assembler {
         }
 
         void assemble() {
+            assign_labels(input_v);
             for (size_t i = 0; i < input_v.size(); ++i) {
+                if (debug) {
+                    std::cout << input_v.at(i) << std::endl;
+                }
                 if (this->requires_immediate(input_v.at(i))) {
                     // load instruction
                     inst_v.push_back(translate(input_v.at(i)));
                     i++;
                     // load immediate
                     inst_v.push_back(atol(input_v.at(i).c_str()));
+
                 } else {
                     // load instruction
                     inst_v.push_back(translate(input_v.at(i)));

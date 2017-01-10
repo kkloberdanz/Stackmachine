@@ -7,8 +7,14 @@
 int *program;
 int stack[STACK_SIZE];
 
-int pc = 0;
-int sp = 0;
+/* Registers */
+int pc = 0; /* Program Counter */
+int sp = 0; /* Stack Pointer */
+int ra = 0; /* Return address returns address 
+               after jump instructions */
+
+int sr = PROG_SIZE; /* Stack Register 
+                       Used for saving data to the stack */
 
 char inst_names[50][50] = {
     "NOOP",
@@ -24,7 +30,9 @@ char inst_names[50][50] = {
     "READC",
     "POP",
     "LOAD",
+    "LOADRA",
     "STORE",
+    "STORERA",
     "J",
     "JZ",
     "JLEZ",
@@ -45,7 +53,9 @@ enum {
     READC,
     POP,
     LOAD,
+    LOADRA,
     STORE,
+    STORERA,
     J,
     JZ,
     JLEZ,
@@ -93,7 +103,7 @@ void load_code_from_file(int *code, char *filename) {
         if (c == '\n') {
             buff[count] = '\0';
             count = 0;
-            printf("CODE: '%s'\n", buff);
+            /*printf("CODE: '%s'\n", buff);*/
             code[i] = atoi(buff);
             i++;
         }
@@ -118,9 +128,9 @@ int execute(int inst) {
     }
 
 #ifdef DEBUG
-    printf("%d\n", inst);
+    /*printf("%d\n", inst);*/
     if (inst != HALT) {
-        printf("INST: %s, PC: %d, TOP: %d\n", inst_names[inst], pc, stack[sp]);
+        printf("\nINST: %s, PC: %d, SP: %d, TOP: %d\n", inst_names[inst], pc, sp, stack[sp]);
     }
 #endif
 
@@ -138,37 +148,74 @@ int execute(int inst) {
             stack[sp] = stack[program[++pc]];
             break;
 
+        case LOADRA:
+             ra = stack[sr];
+             sr++;
+             break;
+
         case STORE: 
             stack[program[++pc]] = stack[sp];
             break;
 
+        case STORERA:
+            stack[sr] = ra;
+            sr--;
+            break;
+
         case J:
-            pc = program[pc+1];
+            ra = pc+1;
+            pc = program[pc+1]; 
+#ifdef DEBUG
+            printf("J target: %d\n", pc);
+#endif
             return 1;
             break;
 
         case JZ:
+            ra = pc+1;
             if (stack[sp] == 0) {
                 pc = program[pc+1];
+#ifdef DEBUG
+                printf("JZ target: %d\n", pc);
+#endif
                 return 1;
             } else {
                 pc++;
             }
+#ifdef DEBUG
+            printf("JZ target: %d\n", pc);
+#endif
             break;
 
         case JLEZ:
+            ra = pc+1;
             if (stack[sp] <= 0) {
                 pc = program[pc+1];
+#ifdef DEBUG
+                printf("JLEZ target: %d\n", pc);
+#endif
                 return 1;
             } else {
                 pc++;
             }
+#ifdef DEBUG
+            printf("JLEZ target: %d\n", pc);
+#endif
             break;
+
+/*
+        case JRA:
+            pc = ra+1;
+#ifdef DEBUG
+            printf("JRA target: %d\n", pc);
+#endif
+            break;
+*/
 
         case ADD:
             {
             int a = stack[sp--];
-            int b = stack[sp--];
+            int b = stack[sp];
             stack[sp] = a + b;
             }
             break;
@@ -176,7 +223,7 @@ int execute(int inst) {
         case SUB:
             {
             int a = stack[sp--];
-            int b = stack[sp--];
+            int b = stack[sp];
             stack[sp] = a - b;
             }
             break;
@@ -184,7 +231,7 @@ int execute(int inst) {
         case MUL:
             {
             int a = stack[sp--];
-            int b = stack[sp--];
+            int b = stack[sp];
             stack[sp] = a * b;
             }
             break;
@@ -192,7 +239,7 @@ int execute(int inst) {
         case DIV:
             {
             int a = stack[sp--];
-            int b = stack[sp--];
+            int b = stack[sp];
             stack[sp] = a / b;
             }
             break;
@@ -201,7 +248,7 @@ int execute(int inst) {
         case MOD:
             {
             int a = stack[sp--];
-            int b = stack[sp--];
+            int b = stack[sp];
             stack[sp] = a % b;
             }
             break;
