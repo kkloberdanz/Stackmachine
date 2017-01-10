@@ -4,7 +4,7 @@
 #define STACK_SIZE 200
 #define PROG_SIZE  200
 
-int *program;
+int program[PROG_SIZE];
 int stack[STACK_SIZE];
 
 int pc = 0;
@@ -69,9 +69,8 @@ void print_stack() {
 
 int get_num_lines(char* filename) {
     FILE *fp;
-    fp = fopen(filename, "r");
+    fp = fopen(filename);
     int count = 0;
-    char c;
     while ( (c = fgetc(fp)) != EOF) {
         if (c == '\n') {
             count++;
@@ -79,28 +78,6 @@ int get_num_lines(char* filename) {
     }
     fclose(fp);
     return count;
-}
-
-void load_code_from_file(int *code, char *filename) {
-    FILE *fp;
-    fp = fopen(filename, "r");
-
-    char buff[255];
-    char c;
-    int  count = 0, i = 0;
-    printf("Reading from: %s\n", filename);
-    while ( (c = fgetc(fp)) != EOF) { 
-        if (c == '\n') {
-            buff[count] = '\0';
-            count = 0;
-            printf("CODE: '%s'\n", buff);
-            code[i] = atoi(buff);
-            i++;
-        }
-        buff[count] = c;
-        count++;
-    }
-    fclose(fp);
 }
 
 int execute(int inst) {
@@ -249,15 +226,6 @@ void loop() {
     }
 }
 
-void print_array(int* arr, int size) {
-    int i;
-    printf("[");
-    for (i = 0; i < size - 1; ++i) {
-        printf("%d, ", arr[i]);
-    }
-    printf("%d]\n", arr[i]);
-}
-
 int main(int argc, char** argv) { 
 
     /*
@@ -286,7 +254,6 @@ int main(int argc, char** argv) {
     };
     */
 
-    /*
     int code[] = { 
         PUSH, 1,    
         PUSH, -3,    
@@ -298,7 +265,6 @@ int main(int argc, char** argv) {
         //JLEZ, 4,
         HALT         
     };
-    */
 
     /*
     int code[] = { 
@@ -325,20 +291,17 @@ int main(int argc, char** argv) {
     };
     */
 
+    /* Read in binary file */ 
     if (argc < 2) {
         fprintf(stderr, "error: specify the file name");
         exit(EXIT_FAILURE);
-    } 
+    }
+
+    FILE *fp;
+    fp = fopen(argv[1], "r");
 
     printf("*** LOADING ***\n");
     int num_lines = get_num_lines(argv[1]);
-    program = malloc(num_lines * sizeof(int));
-
-    load_code_from_file(program, argv[1]);
-#ifdef DEBUG
-    print_array(program, num_lines);
-#endif
-
     /*
     int i;
     for (i = 0; code[i] != HALT; ++i) {
@@ -355,6 +318,5 @@ int main(int argc, char** argv) {
 
     loop();
     print_stack();
-    free(program);
     return 0;
 }
