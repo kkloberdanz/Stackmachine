@@ -19,9 +19,8 @@ _Return:
     JLEZ
     _AddRoutine
 
-
-
-HALT
+_HALT:
+    HALT
 
 _AddRoutine:
 
@@ -37,3 +36,4 @@ _AddRoutine:
 
     J
     _Return
+

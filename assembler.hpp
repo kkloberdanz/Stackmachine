@@ -54,6 +54,12 @@ class Assembler {
                    (inst == "JLEZ");
         }
 
+        bool is_jump(const std::string inst) {
+            return (inst == "J")    ||
+                   (inst == "JZ")   ||
+                   (inst == "JLEZ");
+        }
+
         std::string process(std::string s) {
             std::string ret_s;
             // process out comments and whitespace
@@ -77,6 +83,7 @@ class Assembler {
             std::map<std::string, int64_t> label_m;
             std::string inst;
             int found;
+            bool error = false;
             for (int64_t i = 0; i < v.size(); ++i) {
                 inst = v.at(i);
 
@@ -91,9 +98,31 @@ class Assembler {
 
             for (int64_t i = 0; i < v.size(); ++i) {
                 inst = v.at(i);
-                if (label_m.find(inst) != label_m.end()) {
-                    v.at(i) = std::to_string(label_m.find(inst)->second);
+                std::map<std::string, int64_t>::iterator it;
+                it = label_m.find(inst);
+
+                // if previous instruction is a jump,
+                // then it MUST be followed by a label
+                if ((i > 0) && (is_jump(v.at(i-1)))) {
+                    if (it == label_m.end()) {
+                        error = true;
+                        std::cerr << "error: no matching label for jump target '" 
+                            << inst << "'" << std::endl;
+                    }
                 }
+
+                if (it != label_m.end()) {
+                    v.at(i) = std::to_string(it->second);
+                    label_m.erase(it);
+                }
+
+                if (error) {
+                    std::cerr << "error: Fatal error" << std::endl;
+                    exit(EXIT_FAILURE);
+                }
+            }
+            if (!label_m.empty()) {
+                std::cerr << "warning: unused labels" << std::endl;
             }
         }
 
