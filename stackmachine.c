@@ -307,71 +307,6 @@ void print_array(int* arr, int size) {
 
 int main(int argc, char** argv) { 
 
-    /*
-    int code[] = { PUSH, 2,     // Push 2
-                   PUSH, 3,     // Push 3
-                   ADD,          // 2 + 3 = 5
-                   PRINTI,       // Print 5
-                   PUSH, 10,    // Push \n
-                   PRINTC,       // Print \n
-                   POP,          // POP \n
-                   PUSH, 17,    // Push 17
-                   PRINTI,       // Print 12
-                   PUSH, 10,    // Push \n
-                   PRINTC,       // Print \n
-                   POP,          // Pop \n
-                   MOD,          // 12 % 5 = 2
-                   PRINTI,       // Print 2
-                   PUSH, 10,    // Push \n
-                   PRINTC,       // Print \n
-                   POP,          // Pop \n
-                   LOAD, 2,      // Load 5
-                   ADD,          // 5 + 5 = 10
-                   PRINTI,
-                   PRINTC,
-                   HALT          // End
-    };
-    */
-
-    /*
-    int code[] = { 
-        PUSH, 1,    
-        PUSH, -3,    
-        ADD,
-        PRINTI,      
-        PUSH, '\n',
-        PRINTC,
-        POP,
-        //JLEZ, 4,
-        HALT         
-    };
-    */
-
-    /*
-    int code[] = { 
-        PUSH, 1,       // Used for loop
-        PUSH, -3,    
-        STORE, 100,
-        STORE, 101,
-
-        PUSH, 2,       // Mul 2 * 5 four times
-        PUSH, 5,
-        MUL,
-
-        PRINTI,        // Print results
-        PUSH, '\n',
-        PRINTC,
-        POP,
-
-        LOAD, 100,
-        LOAD, 101,
-
-        ADD,
-        JLEZ, 4,
-        HALT         
-    };
-    */
-
     if (argc < 2) {
         fprintf(stderr, "error: specify the file name");
         exit(EXIT_FAILURE);
@@ -385,17 +320,6 @@ int main(int argc, char** argv) {
 #ifdef DEBUG
     print_array(program, num_lines);
 #endif
-
-    /*
-    int i;
-    for (i = 0; code[i] != HALT; ++i) {
-        program[i] = code[i];
-#ifdef DEBUG
-        printf("i = %d, Pushing: %s\n", i, inst_names[program[i]]);
-#endif
-    }
-    program[i] = HALT;
-    */
 
     printf("*** DONE LOADING ***\n");
     printf("### RUNNING ###\n");
