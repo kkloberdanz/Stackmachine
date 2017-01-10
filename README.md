@@ -21,7 +21,7 @@ PUSH        : Pushes immediate value, i.e. value below this instruction
 
 STORE       : Stores top of stack to the specified memory location
 
-LOAD        : Load the instruction at specifeid memory location to 
+LOAD        : Load the instruction at specified memory location to 
               top of stack
 
 J           : Jump to specified label/memory address
