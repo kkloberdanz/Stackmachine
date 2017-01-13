@@ -14,6 +14,7 @@ $ make
 
 Instruction Set:
 
+
 #Immediate
 
 PUSH        : Pushes immediate value, i.e. value below this instruction
@@ -53,9 +54,11 @@ READC       : Read 1 character from stdin, put on top of stack
 
 POP         : Pop top item off of stack
 
+
 #System
 
 HALT        : Terminate the program
 
 NOOP        : No operation, do nothing
 
+RET         : Return from the previous function call from the call stack

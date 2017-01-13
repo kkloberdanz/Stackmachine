@@ -4,7 +4,6 @@
 #include <map>
 #include <cstdint>
 
-#include "instructions.h"
 #include "assembler.hpp"
 
 int main(int argc, char** argv) {

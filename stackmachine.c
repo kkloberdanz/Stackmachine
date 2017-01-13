@@ -1,20 +1,41 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define STACK_SIZE 200
-#define PROG_SIZE  200
+#define STACK_SIZE                 2000
+#define PROG_SIZE                  2000
+#define CALL_STACK_SIZE             500
 
+/* Code section */
 int *program;
+
 int stack[STACK_SIZE];
+
+/* Save return address here */
+int call_stack[CALL_STACK_SIZE];
 
 /* Registers */
 int pc = 0; /* Program Counter */
-int sp = 0; /* Stack Pointer */
-int ra = 0; /* Return address returns address 
-               after jump instructions */
 
-int sr = PROG_SIZE; /* Stack Register 
+int sp = 0; /* Stack Pointer */
+
+int cp = 0; /* Call Pointer 
+               Return address returns address after jump instructions */
+
+int sr = PROG_SIZE; /* Stack Register / Save Register
                        Used for saving data to the stack */
+
+void print_call_stack() {
+    int i;
+    printf("CP = %d\n", cp);
+    for (i = 0; i <= cp; ++i) {
+        printf("CALL STACK[%d] = %d\n", i, call_stack[i]);
+    }
+}
+
+void set_call_stack() {
+    call_stack[cp] = pc + 2; 
+    cp++;
+}
 
 char inst_names[50][50] = {
     "NOOP",
@@ -30,35 +51,34 @@ char inst_names[50][50] = {
     "READC",
     "POP",
     "LOAD",
-    "LOADRA",
     "STORE",
-    "STORERA",
     "J",
     "JZ",
     "JLEZ",
+    "JNZ",
+    "RET",
     "HALT"
 };
 
 enum {
-    NOOP,
-    PUSH,
-    ADD,
-    SUB,
-    MUL,
-    DIV,
-    MOD,
-    PRINTI,
-    READI,
-    PRINTC,
-    READC,
-    POP,
-    LOAD,
-    LOADRA,
-    STORE,
-    STORERA,
-    J,
-    JZ,
-    JLEZ,
+    NOOP    = 0,
+    PUSH    = 1,
+    ADD     = 2,
+    SUB     = 3,
+    MUL     = 4,
+    DIV     = 5,
+    MOD     = 6,
+    PRINTI  = 7,
+    READI   = 8,
+    PRINTC  = 9,
+    READC   = 10,
+    POP     = 11,
+    LOAD    = 12,
+    STORE   = 13,
+    J       = 14,
+    JZ      = 15,
+    JLEZ    = 16,
+    RET     = 17,
     HALT = 999999
 };
 
@@ -103,7 +123,6 @@ void load_code_from_file(int *code, char *filename) {
         if (c == '\n') {
             buff[count] = '\0';
             count = 0;
-            /*printf("CODE: '%s'\n", buff);*/
             code[i] = atoi(buff);
             i++;
         }
@@ -116,13 +135,13 @@ void load_code_from_file(int *code, char *filename) {
 int execute(int inst) {
 
     if (pc > PROG_SIZE) {
-        printf("ERROR: PC out of bounds\n");
+        fprintf(stderr, "ERROR: PC out of bounds\n");
         print_stack();
         exit(EXIT_FAILURE);
     }
 
     if (sp > STACK_SIZE) {
-        printf("ERROR: SP out of bounds\n");
+        fprintf(stderr, "ERROR: SP out of bounds\n");
         print_stack();
         exit(EXIT_FAILURE);
     }
@@ -148,22 +167,26 @@ int execute(int inst) {
             stack[sp] = stack[program[++pc]];
             break;
 
+            /*
         case LOADRA:
              ra = stack[sr];
              sr++;
              break;
+             */
 
         case STORE: 
             stack[program[++pc]] = stack[sp];
             break;
 
+            /*
         case STORERA:
             stack[sr] = ra;
             sr--;
             break;
+            */
 
         case J:
-            ra = pc+1;
+            set_call_stack();
             pc = program[pc+1]; 
 #ifdef DEBUG
             printf("J target: %d\n", pc);
@@ -172,7 +195,7 @@ int execute(int inst) {
             break;
 
         case JZ:
-            ra = pc+1;
+            set_call_stack();
             if (stack[sp] == 0) {
                 pc = program[pc+1];
 #ifdef DEBUG
@@ -188,11 +211,12 @@ int execute(int inst) {
             break;
 
         case JLEZ:
-            ra = pc+1;
+            set_call_stack();
             if (stack[sp] <= 0) {
                 pc = program[pc+1];
 #ifdef DEBUG
                 printf("JLEZ target: %d\n", pc);
+                print_call_stack();
 #endif
                 return 1;
             } else {
@@ -203,14 +227,35 @@ int execute(int inst) {
 #endif
             break;
 
-/*
-        case JRA:
-            pc = ra+1;
+
+        /* Jump if Not Zero */
+        case JNZ:
+            set_call_stack();
+            if (stack[sp] != 0) {
+                pc = program[pc+1];
 #ifdef DEBUG
-            printf("JRA target: %d\n", pc);
+                printf("JZ target: %d\n", pc);
+#endif
+                return 1;
+            } else {
+                pc++;
+            }
+#ifdef DEBUG
+            printf("JZ target: %d\n", pc);
 #endif
             break;
-*/
+        /* Return from subroutine,
+         * Sets PC to the address in RA
+         */
+        case RET:
+            cp--;
+            pc = call_stack[cp];
+#ifdef DEBUG
+            print_call_stack();
+            printf("PC = %d, RETURNING TO: %d\n", pc, program[call_stack[cp]]);
+#endif
+            return 1;
+            break;
 
         case ADD:
             {
@@ -258,6 +303,7 @@ int execute(int inst) {
             break;
 
         case READI:
+            sp++;
             scanf("%d", &stack[sp]);
             break;
 
@@ -266,6 +312,7 @@ int execute(int inst) {
             break;
 
         case READC:
+            sp++;
             stack[sp] = getchar();
             break; 
 
@@ -279,7 +326,7 @@ int execute(int inst) {
             break;
 
         default:
-            printf("ERROR: unknown instruction: %d\n", inst);
+            fprintf(stderr, "ERROR: unknown instruction: %d\n", inst);
             print_stack();
             exit(EXIT_FAILURE);
     }
@@ -308,7 +355,7 @@ void print_array(int* arr, int size) {
 int main(int argc, char** argv) { 
 
     if (argc < 2) {
-        fprintf(stderr, "error: specify the file name");
+        fprintf(stderr, "error: specify the file name\n");
         exit(EXIT_FAILURE);
     } 
 

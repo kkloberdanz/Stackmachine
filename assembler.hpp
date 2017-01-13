@@ -19,12 +19,11 @@ class Assembler {
             {"READC",  10},
             {"POP",    11},
             {"LOAD",   12},
-            {"LOADRA", 13},
-            {"STORE",  14},
-            {"STORERA",15},
-            {"J",      16},
-            {"JZ",     17},
-            {"JLEZ",   18},
+            {"STORE",  13},
+            {"J",      14},
+            {"JZ",     15},
+            {"JLEZ",   16},
+            {"RET",    17},
             {"HALT",   999999}
         };
 
@@ -84,6 +83,8 @@ class Assembler {
             std::string inst;
             int found;
             bool error = false;
+
+            // Find labels
             for (int64_t i = 0; i < v.size(); ++i) {
                 inst = v.at(i);
 
@@ -96,6 +97,7 @@ class Assembler {
                 }
             }
 
+            // Replace jump targets with actual numbers
             for (int64_t i = 0; i < v.size(); ++i) {
                 inst = v.at(i);
                 std::map<std::string, int64_t>::iterator it;
@@ -111,9 +113,11 @@ class Assembler {
                     }
                 }
 
+                // If label was found, then replace instances of it with
+                // the proper numerical value
                 if (it != label_m.end()) {
                     v.at(i) = std::to_string(it->second);
-                    label_m.erase(it);
+                    //label_m.erase(it);
                 }
 
                 if (error) {
@@ -121,9 +125,11 @@ class Assembler {
                     exit(EXIT_FAILURE);
                 }
             }
+            /*
             if (!label_m.empty()) {
                 std::cerr << "warning: unused labels" << std::endl;
             }
+            */
         }
 
     public:
