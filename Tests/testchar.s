@@ -81,7 +81,7 @@ _LoadString:
     PUSH                ; Terminating NULL at end of string
     0
 
-    __RecLoadString__:     ; Read until RETURN is pressed
+    __RecLoadString__:  ; Read until RETURN is pressed
         READC
 
         JNZWL           ; recursive call, if top is not 0, keep reading

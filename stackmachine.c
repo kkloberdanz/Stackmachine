@@ -311,7 +311,7 @@ int execute(int inst) {
             break;
 
         /* Return from subroutine,
-         * Sets PC to the address in RA
+         * Sets PC to the top address from call_stack[]
          */
         case RET:
             cp--;
