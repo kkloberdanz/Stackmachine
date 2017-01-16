@@ -1,8 +1,9 @@
 PUSH                    ; End of string
 0
                         ; String gets pushed backwards (This spells AND)
-PUSH
-'D'
+
+PUSH                    ; Just like in C, an ascii char surrounded by
+'D'                     ; single quotes is replaced by its ascii value
 
 PUSH
 'N'
@@ -32,6 +33,9 @@ _PrintNewline
 
 HALT                    ; Terminate
 
+
+; ########## Subroutines ########## 
+
 ; Prints a newline to stdout
 _PrintNewline:
     PUSH
@@ -40,6 +44,7 @@ _PrintNewline:
     POP
     RET
 
+
 ; "Forgets" most recent call
 ; Essentially used to jump back to the call before
 ; the most recent call
@@ -47,10 +52,14 @@ _POPC_and_RET:
     POPC
     RET
 
+
+
 ; Generic return subroutine
 ; Useful to break out of subroutines without linking
 _Ret:
     RET
+
+
 
 ; Prints 0/NULL terminated ascii string to stdout
 _PrintASCII:
@@ -65,16 +74,18 @@ _PrintASCII:
 
     RET         ; return to caller
 
+
+
 ; Load string from stdin to the stack
 _LoadString:
-    PUSH
+    PUSH                ; Terminating NULL at end of string
     0
 
-    _RecLoadString:
+    __RecLoadString__:     ; Read until RETURN is pressed
         READC
 
         JNZWL           ; recursive call, if top is not 0, keep reading
-        _RecLoadString
+        __RecLoadString__
 
-    POP
+    POP                 ; Top NULL char is not needed
     RET

@@ -389,6 +389,7 @@ int execute(int inst) {
         case READC:
             sp++;
             stack[sp] = getchar();
+            // String is done being read once RETURN is pressed
             if (stack[sp] == '\n') {
                 stack[sp] = '\0';
             }
@@ -413,7 +414,6 @@ int execute(int inst) {
 }
 
 void loop() {
-    int inst = NOOP;
     for (pc = 0; execute(program[pc]); ) {
 #ifdef DEBUG
         print_stack();

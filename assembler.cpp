@@ -16,7 +16,7 @@ int main(int argc, char** argv) {
     Assembler asmblr;
 
 #ifdef DEBUG
-    asmblr.set_debug();
+    asmblr.set_debug(true);
 #endif
 
     asmblr.from_file(argv[1]);

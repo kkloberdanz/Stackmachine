@@ -99,7 +99,7 @@ class Assembler {
                 return ret_s;
             }
             // process out comments and whitespace
-            int i = 0;
+            size_t i = 0;
             while ((s[i] == ' ') || (s[i] == '\t') || (s[i] == '\n')) {
                 i++;
             }
@@ -122,7 +122,7 @@ class Assembler {
             bool error = false;
 
             // Find labels
-            for (int64_t i = 0; i < v.size(); ++i) {
+            for (size_t i = 0; i < v.size(); ++i) {
                 inst = v.at(i);
 
                 found = inst.find(':');
@@ -135,7 +135,7 @@ class Assembler {
             }
 
             // Replace jump targets with actual numbers
-            for (int64_t i = 0; i < v.size(); ++i) {
+            for (size_t i = 0; i < v.size(); ++i) {
                 inst = v.at(i);
                 std::map<std::string, int64_t>::iterator it;
                 it = label_m.find(inst);
@@ -170,8 +170,8 @@ class Assembler {
         }
 
     public:
-        bool set_debug() {
-            debug = true;
+        void set_debug(bool d) {
+            debug = d;
         }
 
         Assembler() {
