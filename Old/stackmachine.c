@@ -38,30 +38,31 @@ void set_call_stack() {
 }
 
 char inst_names[50][50] = {
-    "NOOP",
-    "PUSH",
-    "ADD",
-    "SUB",
-    "MUL",
-    "DIV",
-    "MOD",
-    "PRINTI",
-    "READI",
+    "NOOP"
+    "PUSH"
+    "ADD"
+    "SUB"
+    "MUL"
+    "DIV"
+    "MOD"
+    "PRINTI"
+    "READI"
     "PRINTC",
-    "READC",
-    "POP",
-    "LOAD",
-    "STORE",
-    "J",
-    "JZ",
-    "JLEZ",
-    "JNZ",
-    "JWL",
-    "JZWL",
-    "JLEZWL",
-    "JNZWL",
-    "RET",
-    "POPC",
+    "READC"
+    "POP"
+    "LOAD"
+    "STORE"
+    "J"
+    "JZ"
+    "JLEZ"
+    "JNZ"
+    "JNL"
+    "RET"
+    "AND"
+    "OR"
+    "XOR"
+    "NOT"
+    "POPC"
     "HALT"
 };
 
@@ -84,12 +85,13 @@ enum {
     JZ      = 15,
     JLEZ    = 16,
     JNZ     = 17,
-    JWL     = 18,
-    JZWL    = 19,
-    JLEZWL  = 20,
-    JNZWL   = 21,
-    RET     = 22,
-    POPC    = 23,
+    JNL     = 18,
+    RET     = 19,
+    AND     = 20,
+    OR      = 21,
+    XOR     = 22,
+    NOT     = 23,
+    POPC    = 24,
     HALT = 999999
 };
 
@@ -144,7 +146,6 @@ void load_code_from_file(int *code, char *filename) {
 }
 
 int execute(int inst) {
-
     if (pc > PROG_SIZE) {
         fprintf(stderr, "ERROR: PC out of bounds\n");
         print_stack();
@@ -158,14 +159,14 @@ int execute(int inst) {
     }
 
     if (sp < 0) {
-        fprintf(stderr, "ERROR: SP less than zero\n");
+        fprintf(stderr, "ERROR: SP less than 0\n");
         exit(EXIT_FAILURE);
     }
 
 #ifdef DEBUG
     /*printf("%d\n", inst);*/
     if (inst != HALT) {
-        printf("\nINST: %s, PC: %d, SP: %d, TOP: %d\n", inst_names[inst], pc, sp, stack[sp]);
+        printf("\nINST: %s(%d), PC: %d, SP: %d, TOP: %d\n", inst_names[inst], inst, pc, sp, stack[sp]);
     }
 #endif
 
@@ -232,7 +233,7 @@ int execute(int inst) {
                 pc = program[pc+1];
 #ifdef DEBUG
                 printf("JLEZ target: %d\n", pc);
-                print_call_stack();
+                /*print_call_stack();*/
 #endif
                 return 1;
             } else {
@@ -250,22 +251,6 @@ int execute(int inst) {
             if (stack[sp] != 0) {
                 pc = program[pc+1];
 #ifdef DEBUG
-                printf("JNZ target: %d\n", pc);
-#endif
-                return 1;
-            } else {
-                pc++;
-            }
-#ifdef DEBUG
-            printf("JZ target: %d\n", pc);
-#endif
-            break;
-
-
-        case JZWL:
-            if (stack[sp] == 0) {
-                pc = program[pc+1];
-#ifdef DEBUG
                 printf("JZ target: %d\n", pc);
 #endif
                 return 1;
@@ -277,37 +262,11 @@ int execute(int inst) {
 #endif
             break;
 
-        case JLEZWL:
-            if (stack[sp] <= 0) {
-                pc = program[pc+1];
-#ifdef DEBUG
-                printf("JLEZ target: %d\n", pc);
-                print_call_stack();
-#endif
-                return 1;
-            } else {
-                pc++;
-            }
-#ifdef DEBUG
-            printf("JLEZ target: %d\n", pc);
-#endif
-            break;
-
-
-        /* Jump if Not Zero */
-        case JNZWL:
-            if (stack[sp] != 0) {
-                pc = program[pc+1];
-#ifdef DEBUG
-                printf("JNZ target: %d\n", pc);
-#endif
-                return 1;
-            } else {
-                pc++;
-            }
-#ifdef DEBUG
-            printf("JZ target: %d\n", pc);
-#endif
+        /* Jump No Link,
+         * Return address does NOT get saved to call stack */
+        case JNL:
+            pc = program[pc+1]; 
+            return 1;
             break;
 
         /* Return from subroutine,
@@ -317,14 +276,38 @@ int execute(int inst) {
             cp--;
             pc = call_stack[cp];
 #ifdef DEBUG
-            print_call_stack();
+            /*print_call_stack();*/
             printf("PC = %d, RETURNING TO: %d\n", pc, program[call_stack[cp]]);
 #endif
             return 1;
             break;
 
-        case POPC:
-            cp--;
+        case AND:
+            {
+            int a = stack[sp--];
+            int b = stack[sp];
+            stack[sp] = a & b;
+            }
+            break;
+
+        case OR:
+            {
+            int a = stack[sp--];
+            int b = stack[sp];
+            stack[sp] = a | b;
+            }
+            break;
+
+        case XOR:
+            {
+            int a = stack[sp--];
+            int b = stack[sp];
+            stack[sp] = a ^ b;
+            }
+            break;
+
+        case NOT:
+            stack[sp] = !stack[sp];
             break;
 
         case ADD:
@@ -368,11 +351,6 @@ int execute(int inst) {
             }
             break;
 
-        case JWL:
-            pc = program[pc+1];
-            return 1;
-            break;
-
         case PRINTI:
             printf("%d", stack[sp]);
             break;
@@ -389,13 +367,15 @@ int execute(int inst) {
         case READC:
             sp++;
             stack[sp] = getchar();
-            if (stack[sp] == '\n') {
-                stack[sp] = '\0';
-            }
             break; 
 
         case POP:
             sp--;
+            break;
+
+        /* Pop Call stack */
+        case POPC:
+            cp--;
             break;
 
         case HALT:
