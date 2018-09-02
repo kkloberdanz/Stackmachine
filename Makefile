@@ -11,6 +11,9 @@ assembler:
 stackmachine:
 	gcc stackmachine.c -o Bin/stackmachine $(CFLAGS)
 
+debugstackmachine:
+	gcc stackmachine.c -o Bin/stackmachine $(CFLAGS)
+
 debug:
 	gcc stackmachine.c -o Debug/stackmachine $(DEBUG)
 	g++ assembler.cpp -o Debug/assembler -std=gnu++14 $(DEBUG)

@@ -4,11 +4,16 @@
 #define STACK_SIZE                 2000
 #define PROG_SIZE                  2000
 #define CALL_STACK_SIZE             500
+#define STORAGE_SIZE                500
 
 /* Code section */
 int *program;
 
+/* execution stack */
 int stack[STACK_SIZE];
+
+/* accessed with instructions STORE and LOAD*/
+int storage[STORAGE_SIZE];
 
 /* Save return address here */
 int call_stack[CALL_STACK_SIZE];
@@ -180,7 +185,7 @@ int execute(int inst) {
             break;
             
         case LOAD: 
-            stack[sp] = stack[program[++pc]];
+            stack[++sp] = storage[program[++pc]];
             break;
 
             /*
@@ -191,7 +196,7 @@ int execute(int inst) {
              */
 
         case STORE: 
-            stack[program[++pc]] = stack[sp];
+            storage[program[++pc]] = stack[sp--];
             break;
 
             /*

@@ -20,12 +20,12 @@ _AddRoutine
 
 _Halt_success:
     PUSH
-    1
+    0
     HALT
 
 _Halt_failure:
     PUSH
-    0
+    1
     HALT
 
 ; Adds 1 to the top of stack, prints the sum,
